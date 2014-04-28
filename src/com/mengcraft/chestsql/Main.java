@@ -113,22 +113,9 @@ public class Main extends JavaPlugin implements Listener
 							}
 						}
 						if (doSQL.openConnect()) {
-<<<<<<< HEAD
 							inventory = doChest.loadChest(chestType, chestName.toLowerCase(), inventory);
 							if (inventory != null) {
 								((HumanEntity) sender).openInventory(inventory);
-=======
-							try {
-								Statement statement = doSQL.connection.createStatement();
-								inventory = doChest.loadChest(isChest, inventory, chestName.toLowerCase(), statement, sender);
-								if (inventory != null) {
-									((HumanEntity) sender).openInventory(inventory);
-								}
-								else {
-									sender.sendMessage("指定箱子已被他人载入或载入失败");
-									return false;
-								}
->>>>>>> dc5b37057883b2d534683384440dca7003ce7b6b
 							}
 							else {
 								sender.sendMessage("指定箱子已被他人载入或载入失败");
@@ -164,23 +151,10 @@ public class Main extends JavaPlugin implements Listener
 			if (doSQL.openConnect()) {				
 				Inventory inventory = event.getInventory();
 				Player player = (Player) event.getPlayer();
-<<<<<<< HEAD
 				if (doChest.saveChest(chestType, chestName, inventory))
 					player.sendMessage("远程箱子已保存");
 				else
 					getLogger().info("远程箱子保存失败");					
-=======
-				Statement statement;
-				try {
-					statement = doSQL.connection.createStatement();
-					if (doChest.saveChest(isChest, inventory, chestName.toLowerCase(), statement)) 
-						player.sendMessage("远程箱子已保存");
-					else
-						getLogger().info("远程箱子保存失败");
-					statement.close();
-				} 
-				catch (SQLException e) {}
->>>>>>> dc5b37057883b2d534683384440dca7003ce7b6b
 				}
 			}
 		}
