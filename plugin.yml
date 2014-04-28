@@ -1,6 +1,6 @@
 name: ChestSQL
 main: com.mengcraft.chestsql.Main
-version: 0.2
+version: 0.2.2
 commands:
     chest:
         description:
