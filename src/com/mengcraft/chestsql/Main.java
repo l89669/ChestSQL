@@ -41,6 +41,9 @@ public class Main extends JavaPlugin implements Listener
 				if (closeConnect()) {
 					getLogger().info("关闭连接");
 				}
+				else {
+					getLogger().info("关闭连接失败");
+				}
 				setEnabled(false);
 			}
 		}
@@ -48,6 +51,9 @@ public class Main extends JavaPlugin implements Listener
 			getLogger().info("连接失败");
 			if (closeConnect()) {
 				getLogger().info("关闭连接");
+			}
+			else {
+				getLogger().info("关闭连接失败");
 			}
 			setEnabled(false);
 		}
@@ -58,10 +64,13 @@ public class Main extends JavaPlugin implements Listener
 	{
 		HandlerList.unregisterAll((Plugin) this);
 		if (openConnect())
-			if (closeConnect())
-				getLogger().info("关闭连接");
-		getLogger().info("开发者: min梦梦");
-		getLogger().info("服务器出租店: http://shop105595113.taobao.com");
+			if (closeConnect()) {
+				getLogger().info("开发者: min梦梦");
+				getLogger().info("服务器出租店: http://shop105595113.taobao.com");
+			}
+			else {
+				getLogger().info("关闭连接失败");
+			}
 	}
 	
 	@Override
@@ -71,12 +80,12 @@ public class Main extends JavaPlugin implements Listener
 			if (sender instanceof Player) {
 				if (sender.hasPermission("chestsql.use")) {
 					if (args.length < 2)	{
-						boolean isSelfChest = false;
+						String isChest = null;
 						Inventory inventory = null;
 						String chestName = null;
 						if (args.length < 1) {
 							if (sender.hasPermission("chestsql.self")) {
-								isSelfChest = true;
+								isChest = "Self";
 								chestName = sender.getName();
 								if (sender.hasPermission("chestsql.self.vip")) {
 									inventory = getServer().createInventory(null, 45, "远程箱子·私有·" + chestName);
@@ -93,7 +102,7 @@ public class Main extends JavaPlugin implements Listener
 						else {
 							chestName = args[0];
 							if (sender.hasPermission("chestsql.public." + chestName)) {
-								isSelfChest = false;
+								isChest = "Public";
 								inventory = getServer().createInventory(null, 45, "远程箱子·公共·" + chestName);
 							}
 							else {
@@ -104,9 +113,13 @@ public class Main extends JavaPlugin implements Listener
 						if (openConnect()) {
 							try {
 								Statement statement = connection.createStatement();
-								inventory = chest.loadChest(isSelfChest, inventory, chestName, statement, sender);
+								inventory = chest.loadChest(isChest, inventory, chestName.toLowerCase(), statement, sender);
 								if (inventory != null) {
 									((HumanEntity) sender).openInventory(inventory);
+								}
+								else {
+									sender.sendMessage("指定箱子已被他人载入或载入失败");
+									return false;
 								}
 							}
 							catch (SQLException e) {
@@ -134,11 +147,11 @@ public class Main extends JavaPlugin implements Listener
 	{
 		String title[] = event.getInventory().getTitle().split("·");
 		if (title[0].equals("远程箱子")) {
-			boolean isSelfChest;
+			String isChest;
 			if (title[1].equals("私有"))
-				isSelfChest = true;
+				isChest = "Self";
 			else
-				isSelfChest = false;
+				isChest = "Public";
 			String chestName = title[2];
 			if (openConnect()) {				
 				Inventory inventory = event.getInventory();
@@ -146,7 +159,7 @@ public class Main extends JavaPlugin implements Listener
 				Statement statement;
 				try {
 					statement = connection.createStatement();
-					if (chest.saveChest(isSelfChest, inventory, chestName, statement)) 
+					if (chest.saveChest(isChest, inventory, chestName.toLowerCase(), statement)) 
 						player.sendMessage("远程箱子已保存");
 					else
 						getLogger().info("远程箱子保存失败");
@@ -216,21 +229,23 @@ public class Main extends JavaPlugin implements Listener
 	
 	boolean createTable()
 	{
-		boolean CreateStatus = false;
     	try {
     		if(openConnect())
     		{
     			Statement statement = connection.createStatement();
-    			String sqlOrder = "CREATE TABLE IF NOT EXISTS PrivateChest(ChestName text,Inventory text);";
-    			statement.executeUpdate(sqlOrder);
-    			sqlOrder = "CREATE TABLE IF NOT EXISTS PublicChest(ChestName text,Inventory text);";
-    			statement.executeUpdate(sqlOrder);
+    			String sql[] = {"", ""};
+    			sql[0] = "CREATE TABLE IF NOT EXISTS SelfChest (Id int NOT NULL AUTO_INCREMENT, ChestName text, Locked int NOT NULL, Inventory text, PRIMARY KEY (Id));";
+    			sql[1] = "CREATE TABLE IF NOT EXISTS PublicChest (Id int NOT NULL AUTO_INCREMENT, ChestName text, Locked int NOT NULL, Inventory text, PRIMARY KEY (Id));";
+    			statement.executeUpdate(sql[0]);
+    			statement.executeUpdate(sql[1]);
     			statement.close();
-    			CreateStatus = true;
+    			return true;
     		}
     	}
-    	catch(Exception exception) {}
-    	return CreateStatus;
+    	catch(Exception exception) {
+    		return false;
+    	}
+    	return false;
     }
 	
 }
