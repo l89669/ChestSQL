@@ -1,6 +1,8 @@
 use: false
-address: 127.0.0.1
-port: 3306
-dataBase: minecraft
-userName: user
-passWord: pass
+
+mysql:
+    addr: 127.0.0.1
+    port: 3306
+    data: minecraft
+    user: user
+    pass: pass

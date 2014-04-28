@@ -1,7 +1,5 @@
 package com.mengcraft.chestsql;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -19,26 +17,30 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin implements Listener
 {
-	static Connection connection;
-	Chest chest = new Chest();
+	private static Plugin plugin;
+	private DoSQL doSQL = new DoSQL();
+	DoChest doChest = new DoChest();
 	
 	@Override
 	public void onEnable()
 	{
+		plugin = this;
 		getServer().getPluginManager().registerEvents(this, this);
-		this.saveDefaultConfig();
-		if (!this.getConfig().getBoolean("use"))
-			setEnabled(false);		
-		if (openConnect()) {
+		
+		plugin.saveDefaultConfig();
+		if (!plugin.getConfig().getBoolean("use")) {
+			setEnabled(false);
+		}
+		if (doSQL.openConnect()) {
 			getLogger().info("连接成功");
-			if (createTable()) {
+			if (doSQL.createTables()) {
 				getLogger().info("检验成功");
 				getLogger().info("开发者: min梦梦");
 				getLogger().info("服务器出租店: http://shop105595113.taobao.com");
 			}
 			else {
 				getLogger().info("检验失败");
-				if (closeConnect()) {
+				if (doSQL.closeConnect()) {
 					getLogger().info("关闭连接");
 				}
 				else {
@@ -49,7 +51,7 @@ public class Main extends JavaPlugin implements Listener
 		}
 		else {
 			getLogger().info("连接失败");
-			if (closeConnect()) {
+			if (doSQL.closeConnect()) {
 				getLogger().info("关闭连接");
 			}
 			else {
@@ -63,8 +65,8 @@ public class Main extends JavaPlugin implements Listener
 	public void onDisable()
 	{
 		HandlerList.unregisterAll((Plugin) this);
-		if (openConnect())
-			if (closeConnect()) {
+		if (doSQL.openConnect())
+			if (doSQL.closeConnect()) {
 				getLogger().info("开发者: min梦梦");
 				getLogger().info("服务器出租店: http://shop105595113.taobao.com");
 			}
@@ -80,12 +82,12 @@ public class Main extends JavaPlugin implements Listener
 			if (sender instanceof Player) {
 				if (sender.hasPermission("chestsql.use")) {
 					if (args.length < 2)	{
-						String isChest = null;
+						String chestType = null;
 						Inventory inventory = null;
 						String chestName = null;
 						if (args.length < 1) {
 							if (sender.hasPermission("chestsql.self")) {
-								isChest = "Self";
+								chestType = "Self";
 								chestName = sender.getName();
 								if (sender.hasPermission("chestsql.self.vip")) {
 									inventory = getServer().createInventory(null, 45, "远程箱子·私有·" + chestName);
@@ -102,7 +104,7 @@ public class Main extends JavaPlugin implements Listener
 						else {
 							chestName = args[0];
 							if (sender.hasPermission("chestsql.public." + chestName)) {
-								isChest = "Public";
+								chestType = "Public";
 								inventory = getServer().createInventory(null, 45, "远程箱子·公共·" + chestName);
 							}
 							else {
@@ -110,22 +112,15 @@ public class Main extends JavaPlugin implements Listener
 								return false;
 							}
 						}
-						if (openConnect()) {
-							try {
-								Statement statement = connection.createStatement();
-								inventory = chest.loadChest(isChest, inventory, chestName.toLowerCase(), statement, sender);
-								if (inventory != null) {
-									((HumanEntity) sender).openInventory(inventory);
-								}
-								else {
-									sender.sendMessage("指定箱子已被他人载入或载入失败");
-									return false;
-								}
+						if (doSQL.openConnect()) {
+							inventory = doChest.loadChest(chestType, chestName.toLowerCase(), inventory);
+							if (inventory != null) {
+								((HumanEntity) sender).openInventory(inventory);
 							}
-							catch (SQLException e) {
-								sender.sendMessage("打开远程箱子失败");
+							else {
+								sender.sendMessage("指定箱子已被他人载入或载入失败");
 								return false;
-							}
+							}								
 						}
 					}
 					else {
@@ -145,107 +140,27 @@ public class Main extends JavaPlugin implements Listener
 	@EventHandler
 	public void closeInventory(InventoryCloseEvent event)
 	{
-		String title[] = event.getInventory().getTitle().split("·");
+		String[] title = event.getInventory().getTitle().split("·");
 		if (title[0].equals("远程箱子")) {
-			String isChest;
+			String chestType;
 			if (title[1].equals("私有"))
-				isChest = "Self";
+				chestType = "Self";
 			else
-				isChest = "Public";
+				chestType = "Public";
 			String chestName = title[2];
-			if (openConnect()) {				
+			if (doSQL.openConnect()) {				
 				Inventory inventory = event.getInventory();
 				Player player = (Player) event.getPlayer();
-				Statement statement;
-				try {
-					statement = connection.createStatement();
-					if (chest.saveChest(isChest, inventory, chestName.toLowerCase(), statement)) 
-						player.sendMessage("远程箱子已保存");
-					else
-						getLogger().info("远程箱子保存失败");
-					statement.close();
-				} 
-				catch (SQLException e) {}
+				if (doChest.saveChest(chestType, chestName, inventory))
+					player.sendMessage("远程箱子已保存");
+				else
+					getLogger().info("远程箱子保存失败");					
 				}
 			}
 		}
 	
-	boolean closeConnect()
-	{
-		boolean connectStatus = getConnect();
-		if (connectStatus) {
-			try {
-				connection.close();
-			}
-	    	catch(Exception exception) {
-	    		connectStatus = false;
-	    	}
-		}
-		else {
-			connectStatus = true;
-		}
-		return connectStatus;
+	public static Plugin getPlugin() {		
+		return plugin;
 	}
-	
-	boolean openConnect()
-	{
-		boolean connectStatus = getConnect();
-		if(!connectStatus) {
-			String address = this.getConfig().getString("address");
-			String port = this.getConfig().getString("port");
-			String dataBase = this.getConfig().getString("dataBase");
-			String userName = this.getConfig().getString("userName");
-			String passWord = this.getConfig().getString("passWord");
-			try {
-				Class.forName("com.mysql.jdbc.Driver");
-				connection = DriverManager.getConnection("jdbc:mysql://" + address + ":" + port + "/" + dataBase, userName, passWord);
-				connectStatus = true;
-			}
-			catch(Exception exception) {
-				connection = null;
-			}
-		}
-		return connectStatus;
-	}
-	
-	boolean getConnect()
-	{
-		boolean closeStatus = true;
-		boolean ConnectStatus = false;
-		if(connection != null) {
-			try {
-				closeStatus = connection.isClosed();
-			}
-	    	catch(Exception exception) {}
-			if(closeStatus) {
-				connection = null;
-			}
-			else {
-				ConnectStatus = true;
-			}
-		}
-		return ConnectStatus;
-	}
-	
-	boolean createTable()
-	{
-    	try {
-    		if(openConnect())
-    		{
-    			Statement statement = connection.createStatement();
-    			String sql[] = {"", ""};
-    			sql[0] = "CREATE TABLE IF NOT EXISTS SelfChest (Id int NOT NULL AUTO_INCREMENT, ChestName text, Locked int NOT NULL, Inventory text, PRIMARY KEY (Id));";
-    			sql[1] = "CREATE TABLE IF NOT EXISTS PublicChest (Id int NOT NULL AUTO_INCREMENT, ChestName text, Locked int NOT NULL, Inventory text, PRIMARY KEY (Id));";
-    			statement.executeUpdate(sql[0]);
-    			statement.executeUpdate(sql[1]);
-    			statement.close();
-    			return true;
-    		}
-    	}
-    	catch(Exception exception) {
-    		return false;
-    	}
-    	return false;
-    }
 	
 }

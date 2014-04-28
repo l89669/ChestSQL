@@ -7,20 +7,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bukkit.Material;
-import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class Chest {
+public class DoChest {
 	Tools tools = new Tools();
+	DoSQL doSQL = new DoSQL();
 	
-	public Inventory loadChest(String isChest,Inventory inventory,String chestName,Statement statement,CommandSender sender)
+	public Inventory loadChest(String chestType, String chestName, Inventory inventory)
 	{
 		try {
-			String sql = "SELECT Locked, Inventory FROM " + isChest + "Chest WHERE ChestName = '" + chestName + "';";
-			ResultSet result = statement.executeQuery(sql);
+			Statement statement = DoSQL.connection.createStatement();
+			ResultSet result = statement.executeQuery(
+					"SELECT Locked, Inventory FROM " + chestType + "Chest WHERE ChestName = '" + chestName + "';");
 			if(result.last())	{
 				int Locked = result.getInt(1);
 				if (Locked > 0) {
@@ -28,8 +29,8 @@ public class Chest {
 				}
 				String inventoryData = result.getString(2);
 					try {
-						sql = "UPDATE " + isChest + "Chest SET Locked = 1 WHERE ChestName = '" + chestName	+ "';";
-						statement.executeUpdate(sql);
+						statement.executeUpdate(
+								"UPDATE " + chestType + "Chest SET Locked = 1 WHERE ChestName = '" + chestName	+ "';");
 					}
 					catch (Exception e) {
 						return null;
@@ -81,8 +82,8 @@ public class Chest {
 					}
 			else {
 				try {
-					sql = "INSERT INTO " + isChest + "Chest(ChestName, Locked) VALUES('" + chestName + "', 1);";
-					statement.executeUpdate(sql);
+					statement.executeUpdate(
+							"INSERT INTO " + chestType + "Chest(ChestName, Locked) VALUES('" + chestName + "', 1);");
 					} 
 				catch (Exception e) {
 					return null;
@@ -95,11 +96,13 @@ public class Chest {
 			}		
 		}
 	
-	public Boolean saveChest(String isChest,Inventory inventory,String chestName,Statement statement)
+	public Boolean saveChest(String chestType, String chestName, Inventory inventory)
 	{
 		StringBuilder inventoryDateBuilder = new StringBuilder();
 		for (int i = 0; i < inventory.getSize(); i++) {
-			if (i > 0) inventoryDateBuilder.append(";");
+			if (i > 0) {
+				inventoryDateBuilder.append(";");
+			}
 			String itemData = "";
 			ItemStack itemStack = inventory.getItem(i);
 			if (itemStack != null) {
@@ -123,7 +126,9 @@ public class Chest {
 					StringBuilder enchantBuilder = new StringBuilder();
 					Object[] enchantObject = enchant.entrySet().toArray();
 					for(int j = 0; j < enchant.size(); j++) {
-						if(j > 0) enchantBuilder.append("#");
+						if (j > 0) {
+							enchantBuilder.append("#");
+						}
 						Entry enchantEntry = (Entry)(enchantObject[j]);
 						Enchantment enchantTypeObject = (Enchantment)(enchantEntry.getKey());
 						int enchantType = enchantTypeObject.getId();
@@ -139,8 +144,9 @@ public class Chest {
 			}
 		String inventoryData = inventoryDateBuilder.toString();	
 		try {
-			String sql = "UPDATE " + isChest	+ "Chest SET Locked = 0, Inventory = '" + inventoryData	+ "' WHERE ChestName = '" + chestName + "';";
-			statement.executeUpdate(sql);
+			Statement statement = DoSQL.connection.createStatement();
+			statement.executeUpdate(
+					"UPDATE " + chestType	+ "Chest SET Locked = 0, Inventory = '" + inventoryData	+ "' WHERE ChestName = '" + chestName + "';");
 			return true;
 			}
 		catch (SQLException e) {
