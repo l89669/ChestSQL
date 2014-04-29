@@ -83,7 +83,7 @@ public class DoSQL {
 			try {
 				Statement statement = connection.createStatement();
 				String [] sql = {
-						"CREATE TABLE IF NOT EXISTS SelfChest "
+						"CREATE TABLE IF NOT EXISTS PrivateChest "
 						+ "(Id int NOT NULL AUTO_INCREMENT, ChestName text, Locked int NOT NULL, Inventory text, PRIMARY KEY (Id));", 
 						"CREATE TABLE IF NOT EXISTS PublicChest "
 						+ "(Id int NOT NULL AUTO_INCREMENT, ChestName text, Locked int NOT NULL, Inventory text, PRIMARY KEY (Id));"

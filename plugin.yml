@@ -1,13 +1,21 @@
 name: ChestSQL
 main: com.mengcraft.chestsql.Main
-version: 0.2.2
+version: 0.3
 commands:
     chest:
         description:
         usage: 
         permission: chestsql.use
-        permission-message: You don't have permission
+        permission-message:
+    chestadmin:
+        description:
+        usage: 
+        permission: chestsql.admin
+        permission-message:
 permissions:
     chestsql.use:
         description: 
         default: true
+    chestsql.admin:
+        description: 
+        default: op
