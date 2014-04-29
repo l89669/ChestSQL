@@ -135,7 +135,7 @@ public class DoChest {
 						int enchantLevel = (int) enchantEntry.getValue();
 						enchantBuilder.append(Integer.toString(enchantType) + "_" + Integer.toString(enchantLevel));
 						}
-					enchantBuilder.toString();
+					itemEnchant = enchantBuilder.toString();
 					}
 				itemDataBuilder.append(itemEnchant);
 				itemData = itemDataBuilder.toString();

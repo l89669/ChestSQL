@@ -10,10 +10,10 @@ import org.bukkit.plugin.Plugin;
 public class DoSQL {
 	public static Connection connection;
 	
-	String [] getSQLConfig()
+	String[] getSQLConfig()
 	{
 		Plugin plugin = Main.getPlugin();
-		String [] sqlConfig = {
+		String[] sqlConfig = {
 				plugin.getConfig().getString("mysql.addr"),
 				plugin.getConfig().getString("mysql.port"),
 				plugin.getConfig().getString("mysql.data"),
