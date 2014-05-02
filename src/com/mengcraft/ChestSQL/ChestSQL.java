@@ -1,4 +1,4 @@
-package com.mengcraft.chestsql;
+package com.mengcraft.ChestSQL;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,10 +11,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Main extends JavaPlugin implements Listener
+public class ChestSQL extends JavaPlugin implements Listener
 {
 	private static Plugin plugin;
-	private DoSQL doSQL = new DoSQL();
+	DoSQL doSQL = new DoSQL();
 	DoChest doChest = new DoChest();
 	
 	@Override
@@ -33,6 +33,7 @@ public class Main extends JavaPlugin implements Listener
 				getLogger().info("检验成功");
 				getLogger().info("开发者: min梦梦");
 				getLogger().info("服务器出租店: http://shop105595113.taobao.com");
+				getLogger().info("已启用");
 			}
 			else {
 				getLogger().info("检验失败");
@@ -60,10 +61,29 @@ public class Main extends JavaPlugin implements Listener
 	@Override
 	public void onDisable()
 	{
+		for (Player player : getServer().getOnlinePlayers()) {
+			String[] titles = player.getOpenInventory().getTitle().split("·");
+			if (titles[0].equals("远程箱子")) {
+				String chestType;
+				String chestName = titles[2];
+				Inventory inventory = player.getOpenInventory().getTopInventory();
+				player.closeInventory();
+				if (titles[1].equals("私有")) {
+					chestType = "Private";
+				}
+				else {
+					chestType = "Public";
+				}
+				player.sendMessage("远程箱子插件被禁用");
+				doChest.saveChest(chestType, chestName, inventory);
+			}
+		}
 		if (doSQL.openConnect())
 			if (doSQL.closeConnect()) {
+				getLogger().info("关闭连接成功");
 				getLogger().info("开发者: min梦梦");
 				getLogger().info("服务器出租店: http://shop105595113.taobao.com");
+				getLogger().info("已禁用");
 			}
 			else {
 				getLogger().info("关闭连接失败");
@@ -84,7 +104,7 @@ public class Main extends JavaPlugin implements Listener
 								if (args.length > 2) {
 									chestType = "Public";
 									chestName = args[2];
-									if (doChest.lockChest(chestType, chestName)) {
+									if (doChest.lockChest(chestType, chestName.toLowerCase())) {
 										sender.sendMessage("锁定公共箱子"
 												+chestName
 												+ "成功");
@@ -104,7 +124,7 @@ public class Main extends JavaPlugin implements Listener
 								if (args.length > 2) {
 									chestType = "Private";
 									chestName = args[2];
-									if (doChest.lockChest(chestType, chestName)) {
+									if (doChest.lockChest(chestType, chestName.toLowerCase())) {
 										sender.sendMessage("锁定私有箱子"
 												+chestName
 												+ "成功");
@@ -134,7 +154,7 @@ public class Main extends JavaPlugin implements Listener
 								if (args.length > 2) {
 									chestType = "Public";
 									chestName = args[2];
-									if (doChest.unlockChest(chestType, chestName)) {
+									if (doChest.unlockChest(chestType, chestName.toLowerCase())) {
 										sender.sendMessage("解锁公共箱子"
 												+chestName
 												+ "成功");
@@ -154,7 +174,7 @@ public class Main extends JavaPlugin implements Listener
 								if (args.length > 2) {
 									chestType = "Private";
 									chestName = args[2];
-									if (doChest.unlockChest(chestType, chestName)) {
+									if (doChest.unlockChest(chestType, chestName.toLowerCase())) {
 										sender.sendMessage("解锁私有箱子"
 												+chestName
 												+ "成功");
@@ -233,7 +253,7 @@ public class Main extends JavaPlugin implements Listener
 								((HumanEntity) sender).openInventory(inventory);
 							}
 							else {
-								sender.sendMessage("指定箱子已被他人载入或载入失败");
+								sender.sendMessage("指定箱子已被他人锁定或由于其他原因而载入失败");
 								return false;
 							}								
 						}
@@ -249,6 +269,7 @@ public class Main extends JavaPlugin implements Listener
 				}
 				else {
 					sender.sendMessage("你没有使用此命令的权限");
+					return false;
 				}
 			}
 			else {
@@ -274,13 +295,13 @@ public class Main extends JavaPlugin implements Listener
 			String chestName = title[2];
 			if (doSQL.openConnect()) {				
 				Inventory inventory = event.getInventory();
-				Player player = (Player) event.getPlayer();
-				if (doChest.saveChest(chestType, chestName, inventory)) {
-					player.sendMessage("远程箱子已保存");
+				if (doChest.saveChest(chestType, chestName.toLowerCase(), inventory)) {
+					return;
 				}
 				else {
-					getLogger().info("远程箱子保存失败");					
-				}
+					getLogger().info("远程箱子保存失败");
+					return;
+					}
 				}
 			}
 		}

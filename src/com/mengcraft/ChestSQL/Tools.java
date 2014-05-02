@@ -1,4 +1,4 @@
-package com.mengcraft.chestsql;
+package com.mengcraft.ChestSQL;
 
 public class Tools {
 	 public String hexToText(String Hex) {

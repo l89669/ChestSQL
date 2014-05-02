@@ -1,4 +1,4 @@
-package com.mengcraft.chestsql;
+package com.mengcraft.ChestSQL;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,7 +12,7 @@ public class DoSQL {
 	
 	String[] getSQLConfig()
 	{
-		Plugin plugin = Main.getPlugin();
+		Plugin plugin = ChestSQL.getPlugin();
 		String[] sqlConfig = {
 				plugin.getConfig().getString("mysql.addr"),
 				plugin.getConfig().getString("mysql.port"),
