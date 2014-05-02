@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import com.comphenix.protocol.utility.StreamSerializer;
 
 public class DoChest {
-	Tools tools = new Tools();
 	DoSQL doSQL = new DoSQL();
 	
 	public Boolean saveChest(String chestType, String chestName, Inventory inventory)
@@ -69,7 +68,7 @@ public class DoChest {
 				if (inventoryData == null) {
 					return inventory;
 				}
-				String[] itemDatas = tools.SplitText(inventoryData, ";");
+				String[] itemDatas = inventoryData.split(";");
 				int size;
 				if (itemDatas.length < inventory.getSize()) {
 					size = itemDatas.length;    		
@@ -145,7 +144,7 @@ public class DoChest {
 		}
 		else {
 			return false;
+			}
 		}
-	}
 
 	}
