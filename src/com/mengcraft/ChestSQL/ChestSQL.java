@@ -20,6 +20,7 @@ public class ChestSQL extends JavaPlugin implements Listener
 	public void onEnable() 
 	{
 		saveDefaultConfig();
+		reloadConfig();
 		if (getConfig().getBoolean("use")) {
 			plugin = this;
 			if (doSQL.openConnect()) {
