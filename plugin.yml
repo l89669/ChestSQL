@@ -1,6 +1,6 @@
 name: ChestSQL
 main: com.mengcraft.ChestSQL.ChestSQL
-version: 0.4.2
+version: 0.4.4
 commands:
     chest:
         description:
@@ -14,8 +14,14 @@ commands:
         permission-message:
 permissions:
     chestsql.use:
-        description: 
+        description:
         default: true
+    chestsql.use.vip:
+        description:
+        default: op
+    chestsql.public.*:
+        description:
+        default: op
     chestsql.admin:
         description: 
         default: op

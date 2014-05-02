@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+
 import com.comphenix.protocol.utility.StreamSerializer;
 
 public class DoChest {
@@ -13,6 +17,9 @@ public class DoChest {
 	
 	public Boolean saveChest(String chestType, String chestName, Inventory inventory)
 	{
+		if (!doSQL.openConnect()) {
+			return false;
+		}
 		ItemStack[] itemStacks = inventory.getContents();
 		StringBuilder inventoryDataBuilder = new StringBuilder();
 		for (int i = 0; i < inventory.getSize(); i++) {
@@ -50,12 +57,14 @@ public class DoChest {
 	
 	public Inventory loadChest(String chestType, String chestName, Inventory inventory)
 	{
+		if (!doSQL.openConnect()) {
+			return null;
+		}
 		try {
 			Statement statement = DoSQL.connection.createStatement();
 			ResultSet result = statement.executeQuery("SELECT Locked, Inventory FROM " 
-					+ chestType 
-					+ "Chest WHERE ChestName = '" 
-					+ chestName + "';");
+					+ chestType + "Chest "
+					+ "WHERE ChestName = '" + chestName + "';");
 			if(result.last())	{
 				int Locked = result.getInt(1);
 				if (Locked > 0) {
@@ -146,5 +155,31 @@ public class DoChest {
 			return false;
 			}
 		}
+	
+	public Boolean saveAllChest()
+	{
+		Plugin plugin = ChestSQL.plugin;
+		boolean b = true;
+		for (Player player : plugin.getServer().getOnlinePlayers()) {
+			String[] titles = player.getOpenInventory().getTitle().split("·");
+			if (titles[0].equals("远程箱子")) {
+				String chestType;
+				String chestName = titles[2];
+				Inventory inventory = player.getOpenInventory().getTopInventory();
+				player.closeInventory();
+				if (titles[1].equals("私有")) {
+					chestType = "Private";
+				}
+				else {
+					chestType = "Public";
+				}
+				player.sendMessage("远程箱子插件被禁用");
+				if (!saveChest(chestType, chestName, inventory)) {
+					b = false;
+				}
+			}
+		}
+		return b;
+	}
 
 	}

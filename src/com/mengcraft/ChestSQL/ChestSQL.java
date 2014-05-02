@@ -2,8 +2,6 @@ package com.mengcraft.ChestSQL;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -13,47 +11,37 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ChestSQL extends JavaPlugin implements Listener
 {
-	private static Plugin plugin;
+	public static Plugin plugin;
 	DoSQL doSQL = new DoSQL();
 	DoChest doChest = new DoChest();
+	DoCommand doCommand = new DoCommand();
 	
 	@Override
-	public void onEnable()
+	public void onEnable() 
 	{
-		plugin = this;
-		getServer().getPluginManager().registerEvents(this, this);
-		
-		plugin.saveDefaultConfig();
-		if (!plugin.getConfig().getBoolean("use")) {
-			setEnabled(false);
-		}
-		if (doSQL.openConnect()) {
-			getLogger().info("连接成功");
-			if (doSQL.createTables()) {
-				getLogger().info("检验成功");
-				getLogger().info("开发者: min梦梦");
-				getLogger().info("服务器出租店: http://shop105595113.taobao.com");
-				getLogger().info("已启用");
-			}
-			else {
-				getLogger().info("检验失败");
-				if (doSQL.closeConnect()) {
-					getLogger().info("关闭连接");
+		saveDefaultConfig();
+		if (getConfig().getBoolean("use")) {
+			plugin = this;
+			if (doSQL.openConnect()) {
+				getLogger().info("数据库连接成功");
+				if (doSQL.createTables()) {
+					getServer().getPluginManager().registerEvents(this, this);
+					getLogger().info("数据表效验成功");
+					getLogger().info("梦梦家高性能服务器出租");
+					getLogger().info("淘宝店 http://shop105595113.taobao.com");
 				}
 				else {
-					getLogger().info("关闭连接失败");
+					getLogger().info("数据表效验失败");
+					setEnabled(false);
 				}
+			}
+			else {
+				getLogger().info("数据库连接失败");
 				setEnabled(false);
 			}
 		}
 		else {
-			getLogger().info("连接失败");
-			if (doSQL.closeConnect()) {
-				getLogger().info("关闭连接");
-			}
-			else {
-				getLogger().info("关闭连接失败");
-			}
+			getLogger().info("请在配置文件中启用插件");
 			setEnabled(false);
 		}
 	}
@@ -61,227 +49,42 @@ public class ChestSQL extends JavaPlugin implements Listener
 	@Override
 	public void onDisable()
 	{
-		for (Player player : getServer().getOnlinePlayers()) {
-			String[] titles = player.getOpenInventory().getTitle().split("·");
-			if (titles[0].equals("远程箱子")) {
-				String chestType;
-				String chestName = titles[2];
-				Inventory inventory = player.getOpenInventory().getTopInventory();
-				player.closeInventory();
-				if (titles[1].equals("私有")) {
-					chestType = "Private";
-				}
-				else {
-					chestType = "Public";
-				}
-				player.sendMessage("远程箱子插件被禁用");
-				doChest.saveChest(chestType, chestName, inventory);
-			}
+		if (!getConfig().getBoolean("use")) {
+			return;
 		}
-		if (doSQL.openConnect())
-			if (doSQL.closeConnect()) {
-				getLogger().info("关闭连接成功");
-				getLogger().info("开发者: min梦梦");
-				getLogger().info("服务器出租店: http://shop105595113.taobao.com");
-				getLogger().info("已禁用");
+		if (doSQL.openConnect()) {
+			if (doChest.saveAllChest()) {
+				getLogger().info("保存所有打开的远程箱子成功");
 			}
 			else {
-				getLogger().info("关闭连接失败");
+				getLogger().info("保存所有打开的远程箱子失败");
 			}
+			if (doSQL.closeConnect()) {
+				getLogger().info("关闭数据库连接成功");
+				}
+				else {
+					getLogger().info("关闭数据库连接失败");
+					}
+		}
+		getLogger().info("梦梦家高性能服务器出租");
+		getLogger().info("淘宝店 http://shop105595113.taobao.com");
 	}
 	
 	@Override
 	public boolean onCommand(CommandSender sender,Command cmd, String label, String[] args)
 	{
 		if (cmd.getName().equalsIgnoreCase("chestadmin")) {
-			if (sender.hasPermission("chestsql.admin")) {
-				if (args.length > 0){
-					String chestType;
-					String chestName;
-					if (args[0].equalsIgnoreCase("lock")) {
-						if (args.length > 1) {
-							if (args[1].equalsIgnoreCase("public")) {
-								if (args.length > 2) {
-									chestType = "Public";
-									chestName = args[2];
-									if (doChest.lockChest(chestType, chestName.toLowerCase())) {
-										sender.sendMessage("锁定公共箱子"
-												+chestName
-												+ "成功");
-										return true;
-									}
-									else {
-										sender.sendMessage("锁定公共箱子"
-												+chestName
-												+ "失败");
-										return false;
-									}
-								}
-								sender.sendMessage("/chestadmin lock public [*]");
-								return false;
-							}
-							if (args[1].equalsIgnoreCase("private")) {
-								if (args.length > 2) {
-									chestType = "Private";
-									chestName = args[2];
-									if (doChest.lockChest(chestType, chestName.toLowerCase())) {
-										sender.sendMessage("锁定私有箱子"
-												+chestName
-												+ "成功");
-										return true;
-									}
-									else {
-										sender.sendMessage("锁定私有箱子"
-												+chestName
-												+ "失败");
-										return false;
-										}
-									}
-								sender.sendMessage("/chestadmin lock private [*]");
-								return false;
-							}
-							sender.sendMessage("/chestadmin lock public [*]");
-							sender.sendMessage("/chestadmin lock private [*]");
-							return false;
-						}
-						sender.sendMessage("/chestadmin lock public [*]");
-						sender.sendMessage("/chestadmin lock private [*]");
-						return false;
-					}
-					if (args[0].equalsIgnoreCase("unlock")) {
-						if (args.length > 1) {
-							if (args[1].equalsIgnoreCase("public")) {
-								if (args.length > 2) {
-									chestType = "Public";
-									chestName = args[2];
-									if (doChest.unlockChest(chestType, chestName.toLowerCase())) {
-										sender.sendMessage("解锁公共箱子"
-												+chestName
-												+ "成功");
-										return true;
-									}
-									else {
-										sender.sendMessage("解锁公共箱子"
-												+chestName
-												+ "失败");
-										return false;
-									}
-								}
-								sender.sendMessage("/chestadmin unlock public [*]");
-								return false;
-							}
-							if (args[1].equalsIgnoreCase("private")) {
-								if (args.length > 2) {
-									chestType = "Private";
-									chestName = args[2];
-									if (doChest.unlockChest(chestType, chestName.toLowerCase())) {
-										sender.sendMessage("解锁私有箱子"
-												+chestName
-												+ "成功");
-										return true;
-									}
-									else {
-										sender.sendMessage("解锁私有箱子"
-												+chestName
-												+ "失败");
-										return false;
-									}
-									}
-								sender.sendMessage("/chestadmin unlock private [*]");
-								return false;
-							}
-							sender.sendMessage("/chestadmin unlock public [*]");
-							sender.sendMessage("/chestadmin unlock private [*]");
-							return false;
-						}
-						sender.sendMessage("/chestadmin unlock public [*]");
-						sender.sendMessage("/chestadmin unlock private [*]");
-						return false;
-					}
-					sender.sendMessage("/chestadmin lock");
-					sender.sendMessage("/chestadmin unlock");
-					return false;
-				}
-				sender.sendMessage("/chestadmin lock");
-				sender.sendMessage("/chestadmin unlock");
-				return false;
-			}
-			else {
-				sender.sendMessage("你没有chestsql.admin权限");
-				return false;
-			}
+			return doCommand.chestadmin(sender, args);
 		}
 		
 		if (cmd.getName().equalsIgnoreCase("chest")) {
-			if (sender instanceof Player) {
-				if (sender.hasPermission("chestsql.use")) {
-					if (args.length < 2)	{
-						String chestType = null;
-						Inventory inventory = null;
-						String chestName = null;
-						if (args.length < 1) {
-							if (sender.hasPermission("chestsql.self")) {
-								chestType = "Private";
-								chestName = sender.getName();
-								if (sender.hasPermission("chestsql.self.vip") ||
-										sender.hasPermission("chestsql.admin")) {
-									inventory = getServer().createInventory(null, 45, "远程箱子·私有·" + chestName);
-								}
-								else {
-									inventory = getServer().createInventory(null, 27, "远程箱子·私有·" + chestName);
-								}
-							}
-							else {
-								sender.sendMessage("你没有使用私有箱子的权限");
-								return false;
-							}
-						}
-						else {
-							chestName = args[0];
-							if (sender.hasPermission("chestsql.public." + chestName)) {
-								chestType = "Public";
-								inventory = getServer().createInventory(null, 45, "远程箱子·公共·" + chestName);
-							}
-							else {
-								sender.sendMessage("你没有使用公共箱子" + chestName + "的权限");
-								return false;
-							}
-						}
-						if (doSQL.openConnect()) {
-							inventory = doChest.loadChest(chestType, chestName.toLowerCase(), inventory);
-							if (inventory != null) {
-								((HumanEntity) sender).openInventory(inventory);
-							}
-							else {
-								sender.sendMessage("指定箱子已被他人锁定或由于其他原因而载入失败");
-								return false;
-							}								
-						}
-						else {
-							sender.sendMessage("数据库连接失败请联系管理员");
-							return false;
-						}
-					}
-					else {
-						getLogger().info("指令参数过多");
-						return false;
-						}
-				}
-				else {
-					sender.sendMessage("你没有使用此命令的权限");
-					return false;
-				}
-			}
-			else {
-				sender.sendMessage("不能在控制台使用");
-				return false;
-				}
+			return doCommand.chest(sender, args);
 			}
 		return false; 
 		}
 	
 	@EventHandler
-	public void closeInventory(InventoryCloseEvent event)
+	public void onCloseInventory(InventoryCloseEvent event)
 	{
 		String[] title = event.getInventory().getTitle().split("·");
 		if (title[0].equals("远程箱子")) {
@@ -293,21 +96,12 @@ public class ChestSQL extends JavaPlugin implements Listener
 				chestType = "Public";
 			}
 			String chestName = title[2];
-			if (doSQL.openConnect()) {				
-				Inventory inventory = event.getInventory();
-				if (doChest.saveChest(chestType, chestName.toLowerCase(), inventory)) {
-					return;
+			Inventory inventory = event.getInventory();
+			if (doChest.saveChest(chestType, chestName.toLowerCase(), inventory)) {
 				}
-				else {
-					getLogger().info("远程箱子保存失败");
-					return;
-					}
+			else {
+				getLogger().info("远程箱子保存失败");
 				}
 			}
 		}
-	
-	public static Plugin getPlugin() {		
-		return plugin;
 	}
-	
-}

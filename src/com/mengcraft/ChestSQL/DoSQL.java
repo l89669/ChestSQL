@@ -12,7 +12,7 @@ public class DoSQL {
 	
 	String[] getSQLConfig()
 	{
-		Plugin plugin = ChestSQL.getPlugin();
+		Plugin plugin = ChestSQL.plugin;
 		String[] sqlConfig = {
 				plugin.getConfig().getString("mysql.addr"),
 				plugin.getConfig().getString("mysql.port"),
@@ -64,11 +64,16 @@ public class DoSQL {
 			return true;
 		}
 		else {
-			String [] sqlConfig = getSQLConfig();
+			String[] sqlConfig = getSQLConfig();
+			String addr = sqlConfig[0];
+			String port = sqlConfig[1];
+			String data = sqlConfig[2];
+			String user = sqlConfig[3];
+			String pass = sqlConfig[4];
 			try {
 				Class.forName("com.mysql.jdbc.Driver");
 				connection = DriverManager.getConnection(
-						"jdbc:mysql://" + sqlConfig[0] + ":" + sqlConfig[1] + "/" + sqlConfig[2], sqlConfig[3], sqlConfig[4]);
+						"jdbc:mysql://" + addr + ":" + port + "/" + data, user, pass);
 				return true;
 			}
 			catch (Exception e) {
@@ -82,7 +87,7 @@ public class DoSQL {
 		if (openConnect()) {
 			try {
 				Statement statement = connection.createStatement();
-				String [] sql = {
+				String[] sql = {
 						"CREATE TABLE IF NOT EXISTS PrivateChest "
 						+ "(Id int NOT NULL AUTO_INCREMENT, ChestName text, Locked int NOT NULL, Inventory text, PRIMARY KEY (Id));", 
 						"CREATE TABLE IF NOT EXISTS PublicChest "
