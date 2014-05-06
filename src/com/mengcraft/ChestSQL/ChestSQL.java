@@ -9,16 +9,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class ChestSQL extends JavaPlugin implements Listener
-{
+public class ChestSQL extends JavaPlugin implements Listener {
 	public static Plugin plugin;
 	DoSQL doSQL = new DoSQL();
 	DoChest doChest = new DoChest();
 	DoCommand doCommand = new DoCommand();
-	
+
 	@Override
-	public void onEnable() 
-	{
+	public void onEnable() {
 		saveDefaultConfig();
 		reloadConfig();
 		if (getConfig().getBoolean("use")) {
@@ -30,79 +28,71 @@ public class ChestSQL extends JavaPlugin implements Listener
 					getLogger().info("数据表效验成功");
 					getLogger().info("梦梦家高性能服务器出租");
 					getLogger().info("淘宝店 http://shop105595113.taobao.com");
-				}
-				else {
+				} else {
 					getLogger().info("数据表效验失败");
 					setEnabled(false);
 				}
-			}
-			else {
+			} else {
 				getLogger().info("数据库连接失败");
 				setEnabled(false);
 			}
-		}
-		else {
+		} else {
 			getLogger().info("请在配置文件中启用插件");
 			setEnabled(false);
 		}
 	}
-	
+
 	@Override
-	public void onDisable()
-	{
+	public void onDisable() {
 		if (!getConfig().getBoolean("use")) {
 			return;
 		}
 		if (doSQL.openConnect()) {
 			if (doChest.saveAllChest()) {
 				getLogger().info("保存所有打开的远程箱子成功");
-			}
-			else {
+			} else {
 				getLogger().info("保存所有打开的远程箱子失败");
 			}
 			if (doSQL.closeConnect()) {
 				getLogger().info("关闭数据库连接成功");
-				}
-				else {
-					getLogger().info("关闭数据库连接失败");
-					}
+			} else {
+				getLogger().info("关闭数据库连接失败");
+			}
 		}
 		getLogger().info("梦梦家高性能服务器出租");
 		getLogger().info("淘宝店 http://shop105595113.taobao.com");
 	}
-	
+
 	@Override
-	public boolean onCommand(CommandSender sender,Command cmd, String label, String[] args)
-	{
+	public boolean onCommand(CommandSender sender, Command cmd, String label,
+			String[] args) {
 		if (cmd.getName().equalsIgnoreCase("chestadmin")) {
 			return doCommand.chestadmin(sender, args);
 		}
-		
+
 		if (cmd.getName().equalsIgnoreCase("chest")) {
 			return doCommand.chest(sender, args);
-			}
-		return false; 
 		}
-	
+		return false;
+	}
+
 	@EventHandler
-	public void onCloseInventory(InventoryCloseEvent event)
-	{
+	public void onCloseInventory(InventoryCloseEvent event) {
 		String[] title = event.getInventory().getTitle().split("·");
 		if (title[0].equals("远程箱子")) {
 			String chestType;
 			if (title[1].equals("私有")) {
 				chestType = "Private";
-			}
-			else {
+			} else {
 				chestType = "Public";
 			}
 			String chestName = title[2];
 			Inventory inventory = event.getInventory();
-			if (doChest.saveChest(chestType, chestName.toLowerCase(), inventory)) {
-				}
-			else {
+			if (doChest
+					.saveChest(chestType, chestName.toLowerCase(), inventory)) {
+			} else {
 				getLogger().info("远程箱子保存失败");
-				}
 			}
 		}
 	}
+}
