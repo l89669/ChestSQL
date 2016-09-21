@@ -26,24 +26,32 @@ public class DoCommand {
 			if (args.length > 1) {
 				sender.sendMessage("/chest [Name]");
 				return true;
-			} else {
+			} 
+			else 
+			{
 				if (sender.hasPermission("chestsql.public." + args[0])) {
 					chestType = "Public";
 					chestName = args[0];
 					inventory = plugin.getServer().createInventory(null, 45,
 							"远程箱子·公共·" + chestName);
-				} else {
+				} 
+				else 
+				{
 					sender.sendMessage("你没有chestsql.public." + args[0] + "权限");
 					return true;
 				}
 			}
-		} else {
+		} 
+		else 
+		{
 			chestType = "Private";
 			chestName = sender.getName().toLowerCase();
 			if (sender.hasPermission("chestsql.use.vip")) {
 				inventory = plugin.getServer().createInventory(null, 45,
 						"远程箱子·私有·" + chestName);
-			} else {
+			} 
+			else 
+			{
 				inventory = plugin.getServer().createInventory(null, 27,
 						"远程箱子·私有·" + chestName);
 			}
@@ -51,7 +59,9 @@ public class DoCommand {
 		inventory = doChest.loadChest(chestType, chestName, inventory);
 		if (inventory != null) {
 			((HumanEntity) sender).openInventory(inventory);
-		} else {
+		} 
+		else 
+		{
 			sender.sendMessage("指定箱子已被他人锁定或由于其他原因而载入失败");
 			return false;
 		}
@@ -75,7 +85,9 @@ public class DoCommand {
 									sender.sendMessage("锁定公共箱子" + chestName
 											+ "成功");
 									return true;
-								} else {
+								} 
+								else 
+								{
 									sender.sendMessage("锁定公共箱子" + chestName
 											+ "失败");
 									return false;
@@ -93,7 +105,9 @@ public class DoCommand {
 									sender.sendMessage("锁定私有箱子" + chestName
 											+ "成功");
 									return true;
-								} else {
+								} 
+								else 
+								{
 									sender.sendMessage("锁定私有箱子" + chestName
 											+ "失败");
 									return false;
@@ -121,7 +135,9 @@ public class DoCommand {
 									sender.sendMessage("解锁公共箱子" + chestName
 											+ "成功");
 									return true;
-								} else {
+								} 
+								else 
+								{
 									sender.sendMessage("解锁公共箱子" + chestName
 											+ "失败");
 									return false;
@@ -139,7 +155,9 @@ public class DoCommand {
 									sender.sendMessage("解锁私有箱子" + chestName
 											+ "成功");
 									return true;
-								} else {
+								} 
+								else 
+								{
 									sender.sendMessage("解锁私有箱子" + chestName
 											+ "失败");
 									return false;
