@@ -12,11 +12,11 @@ public class DoSQL {
 
 	String[] getSQLConfig() {
 		Plugin plugin = ChestSQL.plugin;
-		String[] sqlConfig = { plugin.getConfig().getString("mysql.addr"),
+		String[] sqlConfig = { plugin.getConfig().getString("mysql.host"),
 				plugin.getConfig().getString("mysql.port"),
-				plugin.getConfig().getString("mysql.data"),
-				plugin.getConfig().getString("mysql.user"),
-				plugin.getConfig().getString("mysql.pass") };
+				plugin.getConfig().getString("mysql.database"),
+				plugin.getConfig().getString("mysql.username"),
+				plugin.getConfig().getString("mysql.password") };
 		return sqlConfig;
 	}
 
