@@ -1,7 +1,24 @@
 ChestSQL
 ========
-本项目为BukkitCraft插件，使用BukkitAPI。
+This is a CraftBukkit plugin.
 
-引用ProtocolLib项目。
+Dependences: ProtocolLib
 
-依照GPLv2发布。
+Minecraft: 1.6.4 - 1.10
+
+This plugin needs MySQL to work correctly.
+
+What can it do:
+===============
+It can save inventory to database and reopen it in another server.
+
+Support mod items and nbtdata.
+
+Commands:
+=========
+
+/chest - to open player's private chest
+
+/chest [name] - to open a public chest named [name]
+
+/chestadmin - administrator's commands
