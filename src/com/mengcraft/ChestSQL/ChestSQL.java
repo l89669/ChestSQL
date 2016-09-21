@@ -26,8 +26,6 @@ public class ChestSQL extends JavaPlugin implements Listener {
 				if (doSQL.createTables()) {
 					getServer().getPluginManager().registerEvents(this, this);
 					getLogger().info("数据表效验成功");
-					getLogger().info("梦梦家高性能服务器出租");
-					getLogger().info("淘宝店 http://shop105595113.taobao.com");
 				} else {
 					getLogger().info("数据表效验失败");
 					setEnabled(false);
@@ -59,8 +57,7 @@ public class ChestSQL extends JavaPlugin implements Listener {
 				getLogger().info("关闭数据库连接失败");
 			}
 		}
-		getLogger().info("梦梦家高性能服务器出租");
-		getLogger().info("淘宝店 http://shop105595113.taobao.com");
+		getLogger().info("Disabled ChestSQL!");
 	}
 
 	@Override
