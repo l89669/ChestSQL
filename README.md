@@ -21,4 +21,15 @@ Commands:
 
 /chest [name] - to open a public chest named [name]
 
-/chestadmin - administrator's commands
+/chestadmin lock [name]- lock a public chest named [name]
+
+/chestadmin unlock [name] - unlock a public chest named [name]
+
+Permissions:
+=========
+
+chestsql.use - to open player's private chest
+
+chestsql.public.[name] - to open a public chest named [name]
+
+chestsql.admin - to use /chestadmin lock and /chestadmin unlock [name]
